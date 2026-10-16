@@ -1,6 +1,20 @@
 const wheel = document.getElementById("wheel"),
   spinBtn = document.getElementById("spin-btn"),
   finalValue = document.getElementById("final-value");
+const spinAttemptKey = "spinAttemptUsed";
+
+try {
+  spinBtn.disabled = localStorage.getItem(spinAttemptKey) === "true";
+} catch (error) {
+  console.error("Unable to check whether this device has already spun.", error);
+  spinBtn.disabled = true;
+}
+
+window.addEventListener("storage", (event) => {
+  if (event.key === spinAttemptKey && event.newValue === "true") {
+    spinBtn.disabled = true;
+  }
+});
 
 // Values of min and max angle for each slice
 const rotationValues = [
@@ -69,6 +83,18 @@ const getSafeRandomDegree = () => {
 
 // Start spinning
 spinBtn.addEventListener("click", () => {
+  try {
+    if (localStorage.getItem(spinAttemptKey) === "true") {
+      spinBtn.disabled = true;
+      return;
+    }
+    localStorage.setItem(spinAttemptKey, "true");
+  } catch (error) {
+    console.error("Unable to record this device's spin attempt.", error);
+    spinBtn.disabled = true;
+    return;
+  }
+
   spinBtn.disabled = true;
 
   let randomDegree = getSafeRandomDegree(); // Get a valid random degree
@@ -90,7 +116,6 @@ spinBtn.addEventListener("click", () => {
       clearInterval(rotationInterval);
       count = 0;
       resultValue = 101;
-      spinBtn.disabled = false; // Re-enable the spin button
     }
   }, 5);
 });
